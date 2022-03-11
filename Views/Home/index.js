@@ -56,6 +56,7 @@ const Home = ({navigation}) => {
           });
 
           if (token.data) {
+              console.log(token.data)
               return token.data;
           }
       } catch (error) {
@@ -94,6 +95,52 @@ const Home = ({navigation}) => {
 }; 
 
 
+const fetchLogin = async (login) => {
+  login.trim();
+  if (login && login !== "") {
+      try {
+          var token = await AsyncStorage.getItem("access_token");
+          if (token) {
+              token = JSON.parse(token);
+              if ((token.created_at + token.expires_in) <= (Date.now() / 1000)) {
+                  console.log("token expired");
+                  token = await getAccessToken();
+                  if (token)
+                      await AsyncStorage.setItem("access_token", JSON.stringify(token));
+              }
+          }
+          else {
+              token = await getAccessToken();
+              if (token)
+                  await AsyncStorage.setItem("access_token", JSON.stringify(token));
+          }
+          await getInfos(login, token);
+      }
+      catch (error) {
+          console.log(error);
+          alert(error);
+      }
+
+  }
+  else
+      alert("you should set a login first");
+}
+// const checkToken = async (token) => {
+//   try {
+//     const response = await axios.get("https://api.intra.42.fr/oauth/token/info", 
+//     {
+//       headers: {
+//         Authorization: "Bearer " + token,
+//     },
+//     });
+//     if (response.data) {
+//         return response.data;
+//     }
+// } catch (error) {
+//     return null;
+// }
+
+// }
 // const fetchLogin = async (login) => {
 //   login.trim();
 //   if (login && login !== "") {
@@ -101,7 +148,7 @@ const Home = ({navigation}) => {
 //           var token = await AsyncStorage.getItem("access_token");
 //           if (token) {
 //               token = JSON.parse(token);
-//               if ((token.created_at + token.expires_in) <= (Date.now() / 1000)) {
+//               if (checkToken(token) === null) {
 //                   console.log("token expired");
 //                   token = await getAccessToken();
 //                   if (token)
